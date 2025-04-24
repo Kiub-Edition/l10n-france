@@ -6,8 +6,8 @@ from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
-class AccountPaymentMethodLine(models.Model):
-    _inherit = "account.payment.method.line"
+class AccountPaymentMode(models.Model):
+    _inherit = "account.payment.mode"
 
     fr_lcr_type = fields.Selection(
         [
@@ -71,24 +71,24 @@ class AccountPaymentMethodLine(models.Model):
 
     @api.depends("payment_method_id")
     def _compute_fr_lcr_type(self):
-        for line in self:
+        for mode in self:
             fr_lcr_type = False
-            if line.payment_method_id and line.payment_method_id.code == "fr_lcr":
+            if mode.payment_method_id and mode.payment_method_id.code == "fr_lcr":
                 fr_lcr_type = "not_accepted"
-            line.fr_lcr_type = fr_lcr_type
+            mode.fr_lcr_type = fr_lcr_type
 
     @api.constrains("payment_method_id", "fr_lcr_type")
     def _check_fr_lcr(self):
-        for line in self:
+        for mode in self:
             if (
-                line.payment_method_id
-                and line.payment_method_id.code == "fr_lcr"
-                and not line.fr_lcr_type
+                mode.payment_method_id
+                and mode.payment_method_id.code == "fr_lcr"
+                and not mode.fr_lcr_type
             ):
                 raise ValidationError(
                     _(
                         "The field 'Bill of Exchange Type' must be set on "
                         "payment mode '%s'."
                     )
-                    % line.display_name
+                    % mode.display_name
                 )
